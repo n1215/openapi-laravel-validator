@@ -1,0 +1,53 @@
+openapi: 3.0.1
+info:
+  description: openapi-laravel-valdiator example
+  version: 1.0.0
+  title: Hello API
+servers:
+  - url: https://example.com
+paths:
+  /hello:
+    get:
+      summary: hello
+      tags:
+        - hello
+      description: say hello
+      operationId: hello
+      parameters:
+        - name: name
+          in: query
+          description: name
+          schema:
+            type: string
+            description: name
+            example: Taro
+          required: true
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    description: message
+                    example: "Hello, Taro!"
+        422:
+          description: validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - errors
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
