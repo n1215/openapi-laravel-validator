@@ -14,7 +14,7 @@ use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 
 class OpenApiLaravelValidatorServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
         $this->app->singleton(ValidatorsFactoryInterface::class, function () {
             return new ValidatorsFactory($this->makeValidationBuilder());

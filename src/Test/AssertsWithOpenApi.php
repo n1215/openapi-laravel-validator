@@ -22,8 +22,8 @@ trait AssertsWithOpenApi
         }
 
         if ($this->openApiAssertion === null) {
-            /** @var ValidatorsFactoryInterface $validatorsFactory */
             $validatorsFactory = app()->make(ValidatorsFactoryInterface::class);
+            assert($validatorsFactory instanceof ValidatorsFactoryInterface);
             $validators = $validatorsFactory->make();
             $this->openApiAssertion = new OpenApiAssertion(
                 $validators,

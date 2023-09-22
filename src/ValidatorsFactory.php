@@ -9,11 +9,9 @@ use N1215\OpenApiValidation\HttpFoundation\Validators;
 
 class ValidatorsFactory implements ValidatorsFactoryInterface
 {
-    protected ValidatorBuilder $validatorBuilder;
-
-    public function __construct(ValidatorBuilder $validatorBuilder)
-    {
-        $this->validatorBuilder = $validatorBuilder;
+    public function __construct(
+        protected readonly ValidatorBuilder $validatorBuilder
+    ) {
     }
 
     public function make(): Validators

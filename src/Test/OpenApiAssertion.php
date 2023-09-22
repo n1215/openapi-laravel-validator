@@ -15,22 +15,13 @@ use PHPUnit\Framework\TestCase;
 
 class OpenApiAssertion
 {
-    protected Validators $validators;
-
-    protected Dispatcher $eventDispatcher;
-
-    protected TestCase $testCase;
-
     protected ?OperationAddress $operationAddress;
 
     public function __construct(
-        Validators $validators,
-        Dispatcher $eventDispatcher,
-        TestCase $testCase
+        protected readonly Validators $validators,
+        protected readonly Dispatcher $eventDispatcher,
+        protected readonly TestCase $testCase
     ) {
-        $this->testCase = $testCase;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->validators = $validators;
         $this->operationAddress = null;
     }
 

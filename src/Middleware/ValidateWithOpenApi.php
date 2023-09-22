@@ -20,12 +20,11 @@ class ValidateWithOpenApi
 
     protected Validators $validators;
 
-    protected ResponseFactory $responseFactory;
-
-    public function __construct(ValidatorsFactoryInterface $validatorsFactory, ResponseFactory $responseFactory)
-    {
+    public function __construct(
+        ValidatorsFactoryInterface $validatorsFactory,
+        protected readonly ResponseFactory $responseFactory
+    ) {
         $this->validators = $validatorsFactory->make();
-        $this->responseFactory = $responseFactory;
     }
 
     /**

@@ -2,8 +2,8 @@
 OpenAPI(v3) Validation for Laravel based on [n1215/openapi-http-foundation-validator](https://github.com/n1215/openapi-http-foundation-validator).
 
 ## Requirements
-- PHP >= 7.4
-- Laravel >= 6.0
+- PHP >= 8.1
+- Laravel >= 9.0
 
 ## Installation
 
