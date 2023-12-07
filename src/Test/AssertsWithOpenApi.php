@@ -13,11 +13,11 @@ trait AssertsWithOpenApi
 {
     protected ?OpenApiAssertion $openApiAssertion = null;
 
-    public function setOpenApiAssertion(string $path, string $method): void
+    public function setUpAssertsWithOpenApi(): void
     {
-        if (! $this instanceof TestCase) {
+        if (!$this instanceof TestCase) {
             throw new BadMethodCallException(
-                'trait ' . AssertsWithOpenApi::class .  ' should be used by a subclass of ' . TestCase::class
+                'trait ' . AssertsWithOpenApi::class . ' should be used by a subclass of ' . TestCase::class
             );
         }
 
@@ -32,8 +32,6 @@ trait AssertsWithOpenApi
             );
             $this->openApiAssertion->listen();
         }
-
-        $this->openApiAssertion->setOperationAddress($path, $method);
     }
 
     public function disableRequestAssertion(): void

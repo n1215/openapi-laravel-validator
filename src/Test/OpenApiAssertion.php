@@ -6,23 +6,22 @@ namespace N1215\OpenApiValidation\Laravel\Test;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Http\Events\RequestHandled;
-use LogicException;
-use N1215\OpenApiValidation\OperationAddress;
+use Illuminate\Http\Request;
+use League\OpenAPIValidation\PSR7\OperationAddress as LeagueOperationAddress;
+use League\OpenAPIValidation\PSR7\PathFinder;
 use N1215\OpenApiValidation\HttpFoundation\Validators;
+use N1215\OpenApiValidation\OperationAddress;
 use N1215\OpenApiValidation\RequestValidationFailed;
 use N1215\OpenApiValidation\ResponseValidationFailed;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Assert;
 
 class OpenApiAssertion
 {
-    protected ?OperationAddress $operationAddress;
-
     public function __construct(
         protected readonly Validators $validators,
         protected readonly Dispatcher $eventDispatcher,
-        protected readonly TestCase $testCase
+        protected readonly Assert $assert
     ) {
-        $this->operationAddress = null;
     }
 
     /**
@@ -33,14 +32,11 @@ class OpenApiAssertion
         $this->eventDispatcher->listen(
             RequestHandled::class,
             function (RequestHandled $event) {
-                if ($this->operationAddress === null) {
-                    throw new LogicException('please set operation address');
-                }
                 try {
                     $this->validators->getRequestValidator()->validate($event->request);
-                    $this->testCase->assertTrue(true);
+                    $this->assert->assertTrue(true);
                 } catch (RequestValidationFailed $e) {
-                    $this->testCase->fail((string) $e);
+                    $this->assert->fail((string) $e);
                 }
 
                 if ($event->response->getStatusCode() >= 500) {
@@ -48,25 +44,17 @@ class OpenApiAssertion
                 }
 
                 try {
+                    $operationAddresses = $this->findManyOperationAddressesOrFail($event->request);
                     $this->validators->getResponseValidator()->validate(
-                        $this->operationAddress,
+                        $operationAddresses[0],
                         $event->response
                     );
-                    $this->testCase->assertTrue(true);
+                    $this->assert->assertTrue(true);
                 } catch (ResponseValidationFailed $e) {
-                    $this->testCase->fail((string) $e);
+                    $this->assert->fail((string) $e);
                 }
             }
         );
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function setOperationAddress(string $path, string $method): self
-    {
-        $this->operationAddress = new OperationAddress($path, $method);
         return $this;
     }
 
@@ -78,5 +66,34 @@ class OpenApiAssertion
     public function disableResponseAssertion(): void
     {
         $this->validators->getResponseValidator()->enable(false);
+    }
+
+    /**
+     * @param Request $request
+     * @return OperationAddress[]
+     * @throws ResponseValidationFailed
+     */
+    protected function findManyOperationAddressesOrFail(Request $request): array
+    {
+        $pathFinder = new PathFinder($this->validators->getSchema(), $request->getUri(), $request->getMethod());
+        $leagueOperationAddresses = $pathFinder->search();
+
+        if (count($leagueOperationAddresses) === 0) {
+            throw new ResponseValidationFailed(
+                sprintf(
+                    "OpenAPI spec doesn't contain operations matching %s %s",
+                    $request->getUri(),
+                    $request->getMethod()
+                )
+            );
+        }
+
+        return array_map(
+            fn (LeagueOperationAddress $leagueOperationAddress) => new OperationAddress(
+                $leagueOperationAddress->path(),
+                $leagueOperationAddress->method(),
+            ),
+            $leagueOperationAddresses
+        );
     }
 }

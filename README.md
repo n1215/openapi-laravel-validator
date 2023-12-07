@@ -14,7 +14,7 @@ composer require n1215/openapi-laravel-validator
 ## Usage
 
 ### 1. create your OpenAPI Specification file
-create a YAML file or a JSON File.
+Create a YAML file or a JSON File.
 
 example: [hello.yaml](./resource/hello.yaml)
 
@@ -45,6 +45,7 @@ class OpenApiValidatorServiceProvider extends OpenApiLaravelValidatorServiceProv
 ```
 
 ### 3. use `AssertsWithOpenApi` trait in HTTP tests
+Simply use the trait to automatically validate requests and responses.
 
 ```php
 <?php
@@ -62,11 +63,6 @@ class GetHelloTest extends TestCase
 
     public function testSuccess(): void
     {
-        $this->setOpenApiAssertion(
-            '/hello',
-            'get'
-        );
-
         $response = $this->json(
             'get',
             '/hello?name=Taro'
@@ -78,11 +74,6 @@ class GetHelloTest extends TestCase
 
     public function testValidationFailed(): void
     {
-        $this->setOpenApiAssertion(
-            '/hello',
-            'get'
-        );
-
         // disable request validation for invalid request parameters
         $this->disableRequestAssertion();
 
@@ -99,7 +90,7 @@ class GetHelloTest extends TestCase
 
 ### 4. use `ValidateWithOpenAPi` Middleware
 
-you can change responses as you like.
+You can change responses as you like.
 
 ```php
 <?php

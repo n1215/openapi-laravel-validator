@@ -6,6 +6,7 @@ namespace N1215\OpenApiValidation\Laravel\Middleware;
 
 use Closure;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use League\OpenAPIValidation\PSR7\PathFinder;
 use N1215\OpenApiValidation\HttpFoundation\Validators;
 use N1215\OpenApiValidation\Laravel\ValidatorsFactoryInterface;
 use N1215\OpenApiValidation\OperationAddress;
@@ -45,11 +46,26 @@ class ValidateWithOpenApi
         $response = $next($request);
         assert($response instanceof Response);
 
+        $pathFinder = new PathFinder($this->validators->getSchema(), $request->getUri(), $request->getMethod());
+        $operationAddresses = $pathFinder->search();
+
+        if (count($operationAddresses) === 0) {
+            return $this->makeResponseValidationFailedResponse(
+                new ResponseValidationFailed(
+                    sprintf(
+                        "OpenAPI spec doesn't contain operations matching %s %s",
+                        $request->getUri(),
+                        $request->getMethod()
+                    )
+                )
+            );
+        }
+
         try {
             $this->validators->getResponseValidator()->validate(
                 new OperationAddress(
-                    $this->makePath($request),
-                    $request->getMethod()
+                    $operationAddresses[0]->path(),
+                    $operationAddresses[0]->method(),
                 ),
                 $response
             );
@@ -78,11 +94,5 @@ class ValidateWithOpenApi
             ],
             Response::HTTP_INTERNAL_SERVER_ERROR
         );
-    }
-
-    protected function makePath(Request $request): string
-    {
-        $pattern = '/^' . preg_quote($this->basePath, '/') . '/';
-        return '/' . preg_replace($pattern, '', $request->getPathInfo());
     }
 }
