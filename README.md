@@ -111,7 +111,7 @@ class ValidateWithOpenApi extends \N1215\OpenApiValidation\Laravel\Middleware\Va
             [
                 'message' =>  'failed to validate request',
             ],
-            Response::HTTP_INTERNAL_SERVER_ERROR
+            Response::HTTP_BAD_REQUEST
         );
     }
 
